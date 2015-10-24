@@ -40,8 +40,9 @@ def make_qlist( qstart,qend,qwidth,noqs,  ):
     import numpy as np 
     qradi = np.linspace(qstart,qend,noqs)
     qlist=np.zeros(2*noqs) 
-    qlist[::2]= np.int_(qradi-qwidth/2)  #render  even value
-    qlist[1::2]= np.int_(qradi+(1+qwidth)/2) #render odd value
+    qlist[::2]= np.int_( qradi- int(qwidth/2)  ) #+1  #render  even value
+    qlist[1::2]= np.int_(qradi+ int((1.0+qwidth)/2)) #render odd value
+    #print ('run')
     #if qlist_!=None:qlist=qlist_
     return qlist,qradi
 
@@ -72,7 +73,10 @@ def calqlist( qlist,qradi, dimx,dimy, cenx,ceny,
     r= r.flatten() 
     #print qlist
     noqrs = len(qlist)    
-    qind = np.digitize(r, qlist)        
+    #qind =  np.digitize(r, qlist) 
+    qind=np.searchsorted(qlist,r,'right')
+    
+    
     #if qmask==None:
     if qmask is  None:
         w_= np.where( (qind)%2 )# qind should be odd;print 'Yes'
@@ -80,16 +84,13 @@ def calqlist( qlist,qradi, dimx,dimy, cenx,ceny,
     else:
         a=np.where( (qind)%2 )[0]            
         b=np.where(  qmask.flatten()==False )[0]
-        #print a,b
-        #print a.shape,b.shape
         w= np.intersect1d(a,b)
-        #w=a | b
-        #w=b
+
     nopixels=len(w)
-    qind=qind[w]/2
-    #pixellist= (   y*imgwidth +x ).flatten() [w]
+    qind= np.int_(  qind[w]/2 )
     pixellist= (   y*dimx +x ).flatten() [w]
     nopr,bins=np.histogram( qind, bins= range( len(qradi) +1 ))
+    qind = np.int_( qind )
     return pixellist,qind,nopr,nopixels
 
 
@@ -165,7 +166,7 @@ def azimuthal_integration( image, qstart, qend, qwidth,
     #qinten = zeros( [noqs,2] )
     #qinten[:,0]=qradi
     inten=[]
-    for n in xrange(noqs):
+    for n in range(noqs):
         value = np.ravel(image)[ pixellist[qind == n] ]
         #inten.append( value.mean() )
         L=len(value)
@@ -245,7 +246,8 @@ def get_trace_and_maxc(  imgs, pixellist,qind, fs=None, nf=None,
         for k in itd.keys():
             c = itd[k].max()
             mean = itd[k].mean()
-            if not trace_dict.has_key(k):trace_dict[k]=[]
+            if k not in trace_dict.keys():trace_dict[k]=[]
+            #if not trace_dict.has_key(k):trace_dict[k]=[]
             trace_dict[k].append( mean )
             if max_cts < c:
                 max_cts = c
@@ -257,11 +259,13 @@ def get_trace_and_maxc(  imgs, pixellist,qind, fs=None, nf=None,
             data = np.array(trace_dict[k]).reshape( nofram,1)
         else:
             data= np.hstack( [data, np.array(trace_dict[k]).reshape( nofram,1)   ]) 
-    index=xrange( nofram )
+    index=range( nofram )
     qn = len( trace_dict.keys())
     columns = [ 'q%i'%n for n in range(qn) ]
     trace = pd.DataFrame(data=data, index=index,columns=columns)
     return trace, int( max_cts  )+1
+
+
 
 
 
@@ -272,8 +276,15 @@ def get_qRings(  qind, pixellist):
     '''
     import numpy as np
     noqs = len( np.unique( qind ) )
+    
+    #print ('here')
+    
     qRings = list(np.zeros(noqs))
-    for j in xrange(noqs):  #noqs is number of qrings
+    
+    #print (range(noqs))
+    #print ('here')
+    
+    for j in range(noqs):  #noqs is number of qrings
         qRings[j] = pixellist[np.where(qind==j)]
     return qRings
 
@@ -281,7 +292,6 @@ def get_qRings(  qind, pixellist):
 
 
 
- 
 def intensity_distribution(image, pixellist, qind):
     '''Get a intensity distribution as a dict
        Giving: image, a two-d array
@@ -320,8 +330,13 @@ def get_pixellist_intensity( image, center, q=10, qwidth=2, qmask=None,):
     intensity_dist = intensity_distribution(image, pixellist, qind)
     #L = len( intensity_dist.values()[0] )
     indices = np.arange( len(pixellist) )
-    print ('average of intensity is:  %s'%(intensity_dist.values()[0]).mean())
-    return indices, intensity_dist.values()[0]
+    v= list(intensity_dist.values())
+    N = len(v)
+    #print (N)
+    x= np.array( [ v[i].mean() for i in range(N)  ] )
+    
+    print ('average of intensity is:  %s'%x.mean())
+    return indices, v[0]
 
 
 
@@ -429,7 +444,7 @@ def find_center(image, est_center, inner_radius=10,
             pixellist,qind,nopr,nopixels = calqlist(qlist,qradi, dimx,dimy, x,y, qmask)
             intensity_dist = intensity_distribution(image, pixellist, qind)
             L = len( intensity_dist.values()[0] )
-            indices = xrange( L )
+            indices = range( L )
             a = np.vstack([indices, np.ones(len(indices))]).T
             m, c = lstsq(a, intensity_dist.values()[0])[0]
             Im = (intensity_dist.values()[0]).mean()

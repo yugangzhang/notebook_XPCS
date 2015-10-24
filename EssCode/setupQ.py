@@ -27,7 +27,7 @@ def get_Lambda(E,u='SI'):
     elif u is 'm' or u is 'SI':
             scale=1; return l*scale
     else:
-            print 'invalid option, type "get_Lambda(\'?\')" for available options and syntax'
+            print ('invalid option, type "get_Lambda(\'?\')" for available options and syntax')
 
    
 

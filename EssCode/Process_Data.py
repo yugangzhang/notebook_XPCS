@@ -41,18 +41,22 @@ def average_img( imgs, Ns=None,Ne = None ):
     return ave
 
 def cpdump( data, filename, outDir=None):
-    import cPickle
+    #import cPickle
+    import _pickle as cPickle
     if outDir!=None:filename=outDir + filename
-    fp=file(filename,'wb')   
+    fp=open(filename,'wb')
+    #fp=file(filename,'wb')   
     cPickle.dump(data,fp)
     fp.close()
     
 
 def cpopen(  filename=None, inDir=None,  ): 
-    import cPickle,os    
+    import _pickle as cPickle
+    import os    
     if inDir!=None:filename=inDir + filename
     if os.path.isfile(filename):
-        fp=file(filename,'rb')   
+        #fp=file(filename,'rb')   
+        fp=open(filename,'rb')  
         data = cPickle.load(fp)
         fp.close()
         return data
@@ -78,7 +82,7 @@ def trans_data_to_pd(data, label = None, dtype = 'list'):
     elif dtype == 'array':
         data = array(data)
     else:
-        print "Wrong data type! Now only support 'list' and 'array' tpye"
+        print ("Wrong data type! Now only support 'list' and 'array' tpye")
     (N, M,) = data.shape
     index = arange(N)
     if label is None:

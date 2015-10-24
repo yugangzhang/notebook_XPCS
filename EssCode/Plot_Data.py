@@ -342,7 +342,7 @@ def show_mask( img, mask, only_mask=False,
  
     
 
-def show_img_with_ROI(img,pixellist, qind,vmin=None,vmax=None,
+def show_img_with_ROI(img,pixellist, qind,mask=None,vmin=None,vmax=None,
                      xlim=None,ylim=None,title='img',                      
                        logs=True,set_cb=True,save = False,outDir=None  ):
     """give the img, pixellist, qind to show the edf file
@@ -352,6 +352,7 @@ def show_img_with_ROI(img,pixellist, qind,vmin=None,vmax=None,
     dimy,dimx= img.shape
     #imgx= np.zeros( [dimy,dimx])
     imgx = img.copy()
+    if mask is not None:imgx[mask]=  0
     img_ = imgx.ravel()        
     #img_ = np.array( img_, dtype = np.int32)
     #img.dtype='int32'
@@ -362,6 +363,28 @@ def show_img_with_ROI(img,pixellist, qind,vmin=None,vmax=None,
               save = save,outDir = outDir,title=title )
 
 
+
+
+#def show_ROI(img,pixellist, qind,mask=None,vmin=None,vmax=None,
+#                     xlim=None,ylim=None,title='img',                      
+#                       logs=True,set_cb=True,save = False,outDir=None  ):
+#    """give the img, pixellist, qind to show the edf file
+#        with the interested area defined by pixellist and qind """
+#    import numpy as np
+#    
+##    dimy,dimx= img.shape
+#   #imgx= np.zeros( [dimy,dimx])
+#    imgx = img.copy()
+##    
+#    if mask is not None:imgx[mask]=  0
+#    img_ = imgx.ravel()        
+#    #img_ = np.array( img_, dtype = np.int32)
+#    #img.dtype='int32'
+#    img_[pixellist]= qind
+#    img_=img_.reshape( [ dimy,dimx] )
+#    show_img( img_, logs=logs,vmin=vmin,vmax=vmax,
+#              set_cb=set_cb,xlim=xlim,ylim=ylim,
+#              save = save,outDir = outDir,title=title )
 
 
 
