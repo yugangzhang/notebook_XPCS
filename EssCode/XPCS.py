@@ -97,14 +97,23 @@ class xpcs( object):
         if nobufs is None:nobufs=nobuf #defined by the set-up file
         if tmaxs is None:tmaxs=tmax    #defined by the set-up file
         if nobufs%2!=0:print ("nobuf must be even!!!"    )
+            
+            
+            
         dly=zeros( (nolevs+1)*nobufs/2 +1  )        
         dict_dly ={}
         for i in range( 1,nolevs+1):
+            #print ('here')
             if i==1:imin= 1
-            else:imin=nobufs/2+1
-            ptr=(i-1)*nobufs/2+ arange(imin,nobufs+1)
-            dly[ptr]= arange( imin, nobufs+1) *2**(i-1)            
-            dict_dly[i] = dly[ptr-1]            
+            else:imin=int(nobufs/2)+1
+            #print ('here')            
+            ptr=int_(  (i-1)*int(nobufs/2)+ arange(imin,nobufs+1) )
+            #print (ptr)           
+            
+            dly[ptr]= arange( imin, nobufs+1) *2**(i-1)   
+            #print (i)
+            dict_dly[i] = dly[ptr-1]
+           
         dly*=time 
         #dly = dly[:-1]
         dly_ = dly[: where( dly < tmaxs)[0][-1] +1 ]
@@ -123,10 +132,16 @@ class xpcs( object):
         
         num[lev]+=1  
         if lev==0:imin=0
-        else:imin=nobuf/2        
+        else:imin= int( nobuf/2  )
         for i in range(imin, min(num[lev],nobuf) ):
-            ptr=lev*nobuf/2+i    
-            delayno=(bufno-i)%nobuf 
+            #print (i)
+            #print (int(lev*nobuf/2))
+            ptr= int(lev*nobuf/2) +i    
+            
+            #print (ptr)            
+            delayno= int( (bufno-i)%nobuf )            
+            #print (lev, delayno, ptr)          
+            
             IP=buf[lev,delayno]
             IF=buf[lev,bufno]
             G[ptr]+= (  (histogram(qind, bins=noqs, weights= IF*IP))[0]/nopr-G[ptr] )/ (num[lev]-i)
@@ -200,7 +215,7 @@ class xpcs( object):
         '''convert g2 to a pandas frame'''        
         if len(g2.shape)==1:g2=g2.reshape( [len(g2),1] )
         tn, qn = g2.shape
-        tindex=xrange( tn )
+        tindex=range( tn )
         qcolumns = ['t'] + [ 'g2_q%s'%q for q in range(1,1+qn)  ]
         if tscale is None:tscale = 1.0
         #print tn,qn,tindex

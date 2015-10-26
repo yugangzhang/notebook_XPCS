@@ -61,7 +61,7 @@ class xsvs( object):
         """ DOCUMENT __init__(   )
         the initilization of the XSVS class
           """
-        from XPCS_Functions import make_qlist,calqlist,get_qRings
+        from XPCS_Functions import make_qlist,calqlist, get_qRings
         
         self.version='version_1'
         self.create_time='Octa_18_2015'
@@ -83,11 +83,14 @@ class xsvs( object):
         num[lev]+=1
         #print num
         #print num[lev]-1
-        for j in xrange(noqs):
+        for j in range(noqs):
             #change noqs to qbins
             #qRings_j = pixellist[where(qind==j)]
             data = buf[lev,bufno][ qRings[j] ]  #/float(nopr[j])                              
             qHist,qBins = np.histogram(data,bins=BinEdges,normed=True)#normalized by pixel number
+            
+            #qHist,qBins = np.histogram(data,bins=BinEdges,normed=True)#normalized by pixel number
+            
             #qHist,qBins = histogram(data,bins=BinEdges,normed=False
             #print BinEdges
             #print data
@@ -95,7 +98,7 @@ class xsvs( object):
             #print qBins
             #qHist *= 2**(lev+1)
             if isnan( qHist[0] ):
-                print ('Here is the nan!!!')
+                #print ('Here is the nan!!!')
                 qHist = np.zeros_like( qHist)
                     #here assume histBins same for all the qs
             Histrogram2_3D_Matrix_samplei[lev,j] += (
@@ -167,8 +170,8 @@ class xsvs( object):
                 Bins[ i,j ]=  np.arange( maxcts * time_list[i] )
         ###########################################################
      
-        print 'Running sample---%s'%(sid)
-        print 'Doing histrogram for %s frames'%noframes_         
+        print ('Running sample---%s'%(sid))
+        print ('Doing histrogram for %s frames'%noframes_         )
         buf=np.zeros([ timebin_level, timebin], dtype=object)  #// matrix of buffers
         cts=np.zeros(timebin_level)
         cur=np.ones(timebin_level) * timebin
@@ -241,7 +244,7 @@ class xsvs( object):
         if hasattr(plsq[1], 'diagonal'):paramStdDev = sqrt(plsq[1].diagonal()*s_sq) 
         else:
             paramStdDev = 0,0
-            print 'here!!!'
+            #print ('here!!!')
         return plsq[0],paramStdDev
     
     def fit_K_PK(self,func, initParams, xdata,ydata,roi,initKValue=None):
@@ -263,7 +266,7 @@ class xsvs( object):
         if hasattr(plsq[1], 'diagonal'):paramStdDev = sqrt(plsq[1].diagonal()*s_sq) 
         else:
             paramStdDev = 0,0
-            print 'here!!!'
+            #print ('here!!!')
         return plsq[0],paramStdDev
     
  
@@ -299,8 +302,8 @@ class xsvs( object):
         dataToSave = np.zeros([ timebin_level,noqs ], dtype=object)# prepare the data container
         #for each point (t,q) save a fitted parameter, K,M
         tra_mean = trace_mean #trace.mean()
-        for i in xrange(timebin_level): #for each timelevel
-            for j in xrange(noqs): #for each q
+        for i in range(timebin_level): #for each timelevel
+            for j in range(noqs): #for each q
                 #trace.shape = (samples, tlevel, noqs, frames)
                 
                 #initKValue = trace[:,i,j,:].mean() # inital guess for K               
@@ -416,14 +419,14 @@ class xsvs( object):
         import pandas as pd
         
         tn, qn = model.shape
-        tindex=xrange( tn )
+        tindex=range( tn )
         
         tx=[2**i * exposuretime for i in range(tn)]
         if qv is None:qx=range(qn)
         else:qx=qv
         #qx=[i*qperpixel for i in qradi]
         
-        qindex=xrange( qn )
+        qindex=range( qn )
         
         m_tcolumns = [ 'M%i'%n for n in range(tn) ]  #for M
         me_tcolumns = [ 'Me%i'%n for n in range(tn) ]

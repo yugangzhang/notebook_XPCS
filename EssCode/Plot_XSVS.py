@@ -27,7 +27,7 @@ import itertools
 import matplotlib.pyplot as plt
 #from pylab import *
 from XSVS_Functions import nbinomPMF,poisson,peval, gammaDist
-from numpy import sort,zeros,arange,sqrt,array, linspace
+from numpy import sort,zeros,arange,sqrt,array, linspace,max
 
 mcolors = itertools.cycle(['b', 'g', 'r', 'c', 'm', 'y', 'k'])
 markers = itertools.cycle(list(plt.Line2D.filled_markers))
@@ -60,24 +60,33 @@ def xsvs_plot_histogram( bins,his, dev, trace_mean,
     
     time_list = [2**i*expose_time for i in range(timebin_lev)]
     exp_list = time_list
+    hismax=-1000
     for qn in range( noqs ):               
         ax = fig.add_subplot(sx,sy,qn+1 )        
         fig.subplots_adjust(wspace = 0.5)
         fig.subplots_adjust(hspace = 0.5) 
         
-        for tn in xrange(len(exp_list)):
-            marker = markers.next()
-            color = mcolors.next()
+        for tlev, tn in enumerate(range(len(exp_list))):
+            marker = next(markers)
+            color = next( mcolors )
 
             if plotq is not None:qn=plotq
             #print qn
             histogramBins = array( bins[tn,qn] )
             hist_data = his[tn,qn]
+            #print (max(hist_data))
+            if ylim is None:
+                
+                Max=max(hist_data) *1.25
+                if Max>hismax:hismax=Max
+                    
+                #print (hismax,Max)
+                
             hist_err =  dev[tn,qn]
             #if tn==0:print dev[0,0]
 
             if model is not None:
-                x = linspace(histogramBins[0],histogramBins[-1],num=300)
+                x = linspace(histogramBins[0],histogramBins[-1],num=1000)
                 #print x.shape
                 K_= model[tn,qn]['K']['value']
                 M= model[tn,qn]['M']['value']
@@ -92,7 +101,10 @@ def xsvs_plot_histogram( bins,his, dev, trace_mean,
                     fit_gamma = gammaDist(x,[K_gm,M_gm])
                 
                 fit_nbinomPMF_ = peval(x,[K,M])
-                if print_K:print 'the fit-K and count K are:  %s--%s'%(K_, K)
+                if print_K:print ('the fit-K and count K are:  %s--%s'%(K_, K))
+                    
+                    
+                    
             # Plot the histogram for the first q value for all exposures\n",
 
             # First, get the q value\n",
@@ -110,7 +122,8 @@ def xsvs_plot_histogram( bins,his, dev, trace_mean,
             # Get the exposure time\n",
             exp_val =  tn
             
-            if title is not None:q_txt=r'%s '%title+q_txt            
+            if title is not None:q_txt=r'%s '%title+q_txt   
+                
             ax.set_title(q_txt,fontsize= 20 )
             # Plot the data 
             #x-axis is K/<K>, y-axis is P(K), title = q_txt
@@ -123,41 +136,63 @@ def xsvs_plot_histogram( bins,his, dev, trace_mean,
                 #K_ave= model[tn,qn]['K']['value']
                 if model is None:K_= trace_mean['q%i'%qn] * 2**(tn) 
                 K_ave=  K_
-            else:K_ave=1            
+            else:K_ave=1    
+               
+            if tlev==0:
+                #print (K_)
+                sk = r'$\langle K \rangle_t$'
+                sk+= r'$_0$'
+                s= sk +'--%.1f'%K_   
+                ax.text(x =0.45, y=.85, s=s, fontsize=16,transform=ax.transAxes)
+                if model is not None:
+                    mM = r'$M_t$'
+                    mM += r'$_0$'
+                    m = mM + '--%.1f'%M
+                    
+                    ax.text(x =0.45, y=.75, s=m, fontsize=16,transform=ax.transAxes)
+                    
+                    
+                #print ('here')
             #print len( histogramBins[:-1]/K_ave)
             #print len(hist_data[:-1])
             #print len(hist_err[:-1])
             if not show_dev:hist_err_ = hist_err *0
             else:hist_err_ = hist_err
             if model is not None:ls=''
-            else:ls='--'
+            else:ls=''
 
             #print (histogramBins[:-1]/K_ave).shape
             #print ls
              
             ax.errorbar(histogramBins[:-1]/K_ave,hist_data,
-                     hist_err_, ls=ls, markersize=10, lw=2,                          
+                     hist_err_, ls=ls, markersize=6, lw=2,                          
                 marker=marker,color=color,label=r'%.3f' % (exp_list[tn]))
+            
+            #print (max(hist_data))
             
             if model is not None:
                 if show_bn:
-                    ax.errorbar(x/K_ave,fit_nbinomPMF ,
-                    fit_nbinomPMF*0, ls='-',  lw=4,color=color,)
+                    
+                    ax.plot(x/K_ave,fit_nbinomPMF ,
+                     ls='-',  lw=2,color=color,marker='')                    
+                    
+                    #ax.errorbar(x/K_ave,fit_nbinomPMF ,
+                    #fit_nbinomPMF*0, ls='-',  lw=2,color=color,marker='')
                                 #label='nbinomPMF')
                 
                 if show_gamma:
-                    ax.errorbar(x/K_ave,fit_gamma,
-                    fit_gamma*0, ls=':',  lw=6, color=color,)
+                    ax.plot(x/K_ave,fit_gamma,
+                      ls='--',  lw=2, color=color,)
                                 #label='gamma')                    
                     
                 if show_poisson:
                     #print 'show_poisson as -- line'
-                    ax.errorbar(x/K_ave,fit_poisson,
-                    fit_poisson*0, ls='--',  lw=6, color=color,)
+                    ax.plot(x/K_ave,fit_poisson,
+                    ls='--',  lw=2, color=color,)
                                 #label='poisson')
                 if show_bn_K:
-                    ax.errorbar(x/K_ave,fit_nbinomPMF_ ,
-                    fit_nbinomPMF*0, ls='-.',  lw=4,color=color,)
+                    ax.plot(x/K_ave,fit_nbinomPMF_ ,
+                      ls='--',  lw=2,color=color,)
                                # label='nbinomPMF_Kcons')
                     
 
@@ -170,14 +205,19 @@ def xsvs_plot_histogram( bins,his, dev, trace_mean,
         if ylim is not None:
             y1,y2=ylim
             ax.set_ylim( y1,y2)
+           
+        else:
             
+            ax.set_ylim(0, hismax)
         #ax.set_ylim(1e-4,5)    
         #ax.set_yscale('log')        
         #ax.legend(frameon=0,bbox_to_anchor=(1.2,1),title=r'$t_e$')
         if noqs==1:fontsize=20
         else:fontsize=8
-        ax.legend(frameon=0,bbox_to_anchor=(1.0,1),
-                  title=r'$t_e$',fontsize=fontsize)
+        #title=r'$t_l$'+r'$_e$'+r'$_v$'
+        l=ax.legend(frameon=0,bbox_to_anchor=(1.0,1),
+                  title=r'$t$',fontsize=fontsize)
+        plt.setp(l.get_title(), fontsize=22)
         
         #ax.legend(frameon=0,bbox_to_anchor=(1.1,1),title=r'$t_e$')
         if scalex!=False:ax.set_xlabel(r'$K/ \langle K \rangle$',fontsize=20)

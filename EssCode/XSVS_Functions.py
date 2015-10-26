@@ -55,7 +55,7 @@ Functions:
 
 
 from scipy.special import gamma, gammaln
-from sympy import Symbol
+#from sympy import Symbol
 import scipy.misc
 import sys
 from time import time
